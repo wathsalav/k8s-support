@@ -32,8 +32,8 @@ if [[ "${keepgoing}" != "y" ]]; then
 fi
 
 # Create a string representing region and zone variable names for this project.
-GCE_REGION_VAR="GCE_REGION_${PROJECT/-/_}"
-GCE_ZONES_VAR="GCE_ZONES_${PROJECT/-/_}"
+GCE_REGION_VAR="GCE_REGION_${PROJECT//-/_}"
+GCE_ZONES_VAR="GCE_ZONES_${PROJECT//-/_}"
 
 # Dereference the region and zones variables.
 GCE_REGION="${!GCE_REGION_VAR}"
@@ -256,47 +256,49 @@ fi
 # Check the value of the existing IP address associated with the external load
 # balancer name. If it's the same as the current/existing IP, then leave DNS
 # alone, else delete the existing DNS RR and create a new one.
-EXISTING_EXTERNAL_LB_DNS_IP=$(gcloud dns record-sets list \
-    --zone "${PROJECT}-measurementlab-net" \
-    --name "${GCE_BASE_NAME}.${PROJECT}.measurementlab.net." \
-    --format "value(rrdatas[0])" \
-    "${GCP_ARGS[@]}" || true)
-if [[ -z "${EXISTING_EXTERNAL_LB_DNS_IP}" ]]; then
-  # Add the record.
-  gcloud dns record-sets transaction start \
-      --zone "${PROJECT}-measurementlab-net" \
-      "${GCP_ARGS[@]}"
-  gcloud dns record-sets transaction add \
+if false ; then
+  EXISTING_EXTERNAL_LB_DNS_IP=$(gcloud dns record-sets list \
       --zone "${PROJECT}-measurementlab-net" \
       --name "${GCE_BASE_NAME}.${PROJECT}.measurementlab.net." \
-      --type A \
-      --ttl 300 \
-      "${EXTERNAL_IP}" \
-      "${GCP_ARGS[@]}"
-  gcloud dns record-sets transaction execute \
-      --zone "${PROJECT}-measurementlab-net" \
-      "${GCP_ARGS[@]}"
-elif [[ "${EXISTING_EXTERNAL_LB_DNS_IP}" != "${EXTERNAL_LB_IP}" ]]; then
-  gcloud dns record-sets transaction start \
-      --zone "${PROJECT}-measurementlab-net" \
-      "${GCP_ARGS[@]}"
-  gcloud dns record-sets transaction remove \
-      --zone "${PROJECT}-measurementlab-net" \
-      --name "${GCE_BASE_NAME}.${PROJECT}.measurementlab.net." \
-      --type A \
-      --ttl 300 \
-      "${EXISTING_EXTERNAL_LB_DNS_IP}" \
-      "${GCP_ARGS[@]}"
-  gcloud dns record-sets transaction add \
-      --zone "${PROJECT}-measurementlab-net" \
-      --name "${GCE_BASE_NAME}.${PROJECT}.measurementlab.net." \
-      --type A \
-      --ttl 300 \
-      "${EXTERNAL_LB_IP}" \
-      "${GCP_ARGS[@]}"
-  gcloud dns record-sets transaction execute \
-      --zone "${PROJECT}-measurementlab-net" \
-      "${GCP_ARGS[@]}"
+      --format "value(rrdatas[0])" \
+      "${GCP_ARGS[@]}" || true)
+  if [[ -z "${EXISTING_EXTERNAL_LB_DNS_IP}" ]]; then
+    # Add the record.
+    gcloud dns record-sets transaction start \
+	--zone "${PROJECT}-measurementlab-net" \
+	"${GCP_ARGS[@]}"
+    gcloud dns record-sets transaction add \
+	--zone "${PROJECT}-measurementlab-net" \
+	--name "${GCE_BASE_NAME}.${PROJECT}.measurementlab.net." \
+	--type A \
+	--ttl 300 \
+	"${EXTERNAL_IP}" \
+	"${GCP_ARGS[@]}"
+    gcloud dns record-sets transaction execute \
+	--zone "${PROJECT}-measurementlab-net" \
+	"${GCP_ARGS[@]}"
+  elif [[ "${EXISTING_EXTERNAL_LB_DNS_IP}" != "${EXTERNAL_LB_IP}" ]]; then
+    gcloud dns record-sets transaction start \
+	--zone "${PROJECT}-measurementlab-net" \
+	"${GCP_ARGS[@]}"
+    gcloud dns record-sets transaction remove \
+	--zone "${PROJECT}-measurementlab-net" \
+	--name "${GCE_BASE_NAME}.${PROJECT}.measurementlab.net." \
+	--type A \
+	--ttl 300 \
+	"${EXISTING_EXTERNAL_LB_DNS_IP}" \
+	"${GCP_ARGS[@]}"
+    gcloud dns record-sets transaction add \
+	--zone "${PROJECT}-measurementlab-net" \
+	--name "${GCE_BASE_NAME}.${PROJECT}.measurementlab.net." \
+	--type A \
+	--ttl 300 \
+	"${EXTERNAL_LB_IP}" \
+	"${GCP_ARGS[@]}"
+    gcloud dns record-sets transaction execute \
+	--zone "${PROJECT}-measurementlab-net" \
+	"${GCP_ARGS[@]}"
+  fi
 fi
 
 # Create the http-health-check for the nodes in the target pool.
@@ -348,47 +350,49 @@ INTERNAL_LB_IP=$(gcloud compute addresses list \
 # Check the value of the existing IP address associated with the internal load
 # balancer name. If it's the same as the current/existing IP, then leave DNS
 # alone, else delete the existing DNS RR and create a new one.
-EXISTING_INTERNAL_LB_DNS_IP=$(gcloud dns record-sets list \
-    --zone "${PROJECT}-measurementlab-net" \
-    --name "${TOKEN_SERVER_BASE_NAME}.${PROJECT}.measurementlab.net." \
-    --format "value(rrdatas[0])" \
-    "${GCP_ARGS[@]}" || true)
-if [[ -z "${EXISTING_INTERNAL_LB_DNS_IP}" ]]; then
-  # Add the record.
-  gcloud dns record-sets transaction start \
-      --zone "${PROJECT}-measurementlab-net" \
-      "${GCP_ARGS[@]}"
-  gcloud dns record-sets transaction add \
-      --zone "${PROJECT}-measurementlab-net" \
-      --name "${TOKEN_SERVER_BASE_NAME}.${PROJECT}.measurementlab.net." \
-      --type A \
-      --ttl 300 \
-      "${INTERNAL_LB_IP}" \
-      "${GCP_ARGS[@]}"
-  gcloud dns record-sets transaction execute \
-      --zone "${PROJECT}-measurementlab-net" \
-      "${GCP_ARGS[@]}"
-elif [[ "${EXISTING_INTERNAL_LB_DNS_IP}" != "${INTERNAL_LB_IP}" ]]; then
-  gcloud dns record-sets transaction start \
-      --zone "${PROJECT}-measurementlab-net" \
-      "${GCP_ARGS[@]}"
-  gcloud dns record-sets transaction remove \
-      --zone "${PROJECT}-measurementlab-net" \
-      --name "${TOKEN_SERVER_BASE_NAME}.${PROJECT}.measurementlab.net." \
-      --type A \
-      --ttl 300 \
-      "${EXISTING_INTERNAL_LB_DNS_IP}" \
-      "${GCP_ARGS[@]}"
-  gcloud dns record-sets transaction add \
-      --zone "${PROJECT}-measurementlab-net" \
-      --name "${TOKEN_SERVER_BASE_NAME}.${PROJECT}.measurementlab.net." \
-      --type A \
-      --ttl 300 \
-      "${INTERNAL_LB_IP}" \
-      "${GCP_ARGS[@]}"
-  gcloud dns record-sets transaction execute \
-      --zone "${PROJECT}-measurementlab-net" \
-      "${GCP_ARGS[@]}"
+if false ; then
+   EXISTING_INTERNAL_LB_DNS_IP=$(gcloud dns record-sets list \
+       --zone "${PROJECT}-measurementlab-net" \
+       --name "${TOKEN_SERVER_BASE_NAME}.${PROJECT}.measurementlab.net." \
+       --format "value(rrdatas[0])" \
+       "${GCP_ARGS[@]}" || true)
+   if [[ -z "${EXISTING_INTERNAL_LB_DNS_IP}" ]]; then
+     # Add the record.
+     gcloud dns record-sets transaction start \
+	 --zone "${PROJECT}-measurementlab-net" \
+	 "${GCP_ARGS[@]}"
+     gcloud dns record-sets transaction add \
+	 --zone "${PROJECT}-measurementlab-net" \
+	 --name "${TOKEN_SERVER_BASE_NAME}.${PROJECT}.measurementlab.net." \
+	 --type A \
+	 --ttl 300 \
+	 "${INTERNAL_LB_IP}" \
+	 "${GCP_ARGS[@]}"
+     gcloud dns record-sets transaction execute \
+	 --zone "${PROJECT}-measurementlab-net" \
+	 "${GCP_ARGS[@]}"
+   elif [[ "${EXISTING_INTERNAL_LB_DNS_IP}" != "${INTERNAL_LB_IP}" ]]; then
+     gcloud dns record-sets transaction start \
+	 --zone "${PROJECT}-measurementlab-net" \
+	 "${GCP_ARGS[@]}"
+     gcloud dns record-sets transaction remove \
+	 --zone "${PROJECT}-measurementlab-net" \
+	 --name "${TOKEN_SERVER_BASE_NAME}.${PROJECT}.measurementlab.net." \
+	 --type A \
+	 --ttl 300 \
+	 "${EXISTING_INTERNAL_LB_DNS_IP}" \
+	 "${GCP_ARGS[@]}"
+     gcloud dns record-sets transaction add \
+	 --zone "${PROJECT}-measurementlab-net" \
+	 --name "${TOKEN_SERVER_BASE_NAME}.${PROJECT}.measurementlab.net." \
+	 --type A \
+	 --ttl 300 \
+	 "${INTERNAL_LB_IP}" \
+	 "${GCP_ARGS[@]}"
+     gcloud dns record-sets transaction execute \
+	 --zone "${PROJECT}-measurementlab-net" \
+	 "${GCP_ARGS[@]}"
+   fi
 fi
 
 # Create the TCP health check for the token-server backend service.
@@ -453,6 +457,7 @@ for zone in $GCE_ZONES; do
       --filter "name=${gce_name} AND region:${GCE_REGION}" \
       --format "value(address)" \
       "${GCP_ARGS[@]}" || true)
+
   if [[ -n "${EXISTING_IP}" ]]; then
     EXTERNAL_IP="${EXISTING_IP}"
   else
@@ -468,49 +473,52 @@ for zone in $GCE_ZONES; do
   # Check the value of the existing IP address in DNS associated with this GCE
   # instance. If it's the same as the current/existing IP, then leave DNS alone,
   # else delete the existing DNS RR and create a new one.
-  EXISTING_DNS_IP=$(gcloud dns record-sets list \
-      --zone "${PROJECT}-measurementlab-net" \
-      --name "${gce_name}.${PROJECT}.measurementlab.net." \
-      --format "value(rrdatas[0])" \
-      "${GCP_ARGS[@]}" || true)
-  if [[ -z "${EXISTING_DNS_IP}" ]]; then
-    # Add the record.
-    gcloud dns record-sets transaction start \
-        --zone "${PROJECT}-measurementlab-net" \
-        "${GCP_ARGS[@]}"
-    gcloud dns record-sets transaction add \
-        --zone "${PROJECT}-measurementlab-net" \
-        --name "${gce_name}.${PROJECT}.measurementlab.net." \
-        --type A \
-        --ttl 300 \
-        "${EXTERNAL_IP}" \
-        "${GCP_ARGS[@]}"
-    gcloud dns record-sets transaction execute \
-        --zone "${PROJECT}-measurementlab-net" \
-        "${GCP_ARGS[@]}"
-  elif [[ "${EXISTING_DNS_IP}" != "${EXTERNAL_IP}" ]]; then
-    # Add the record, deleting the existing one first.
-    gcloud dns record-sets transaction start \
-        --zone "${PROJECT}-measurementlab-net" \
-        "${GCP_ARGS[@]}"
-    gcloud dns record-sets transaction remove \
-        --zone "${PROJECT}-measurementlab-net" \
-        --name "${gce_name}.${PROJECT}.measurementlab.net." \
-        --type A \
-        --ttl 300 \
-        "${EXISTING_DNS_IP}" \
-        "${GCP_ARGS[@]}"
-    gcloud dns record-sets transaction add \
-        --zone "${PROJECT}-measurementlab-net" \
-        --name "${gce_name}.${PROJECT}.measurementlab.net." \
-        --type A \
-        --ttl 300 \
-        "${EXTERNAL_IP}" \
-        "${GCP_ARGS[@]}"
-    gcloud dns record-sets transaction execute \
-        --zone "${PROJECT}-measurementlab-net" \
-        "${GCP_ARGS[@]}"
+  if false ; then
+      EXISTING_DNS_IP=$(gcloud dns record-sets list \
+	  --zone "${PROJECT}-measurementlab-net" \
+	  --name "${gce_name}.${PROJECT}.measurementlab.net." \
+	  --format "value(rrdatas[0])" \
+	  "${GCP_ARGS[@]}" || true)
+      if [[ -z "${EXISTING_DNS_IP}" ]]; then
+	# Add the record.
+	gcloud dns record-sets transaction start \
+	    --zone "${PROJECT}-measurementlab-net" \
+	    "${GCP_ARGS[@]}"
+	gcloud dns record-sets transaction add \
+	    --zone "${PROJECT}-measurementlab-net" \
+	    --name "${gce_name}.${PROJECT}.measurementlab.net." \
+	    --type A \
+	    --ttl 300 \
+	    "${EXTERNAL_IP}" \
+	    "${GCP_ARGS[@]}"
+	gcloud dns record-sets transaction execute \
+	    --zone "${PROJECT}-measurementlab-net" \
+	    "${GCP_ARGS[@]}"
+      elif [[ "${EXISTING_DNS_IP}" != "${EXTERNAL_IP}" ]]; then
+	# Add the record, deleting the existing one first.
+	gcloud dns record-sets transaction start \
+	    --zone "${PROJECT}-measurementlab-net" \
+	    "${GCP_ARGS[@]}"
+	gcloud dns record-sets transaction remove \
+	    --zone "${PROJECT}-measurementlab-net" \
+	    --name "${gce_name}.${PROJECT}.measurementlab.net." \
+	    --type A \
+	    --ttl 300 \
+	    "${EXISTING_DNS_IP}" \
+	    "${GCP_ARGS[@]}"
+	gcloud dns record-sets transaction add \
+	    --zone "${PROJECT}-measurementlab-net" \
+	    --name "${gce_name}.${PROJECT}.measurementlab.net." \
+	    --type A \
+	    --ttl 300 \
+	    "${EXTERNAL_IP}" \
+	    "${GCP_ARGS[@]}"
+	gcloud dns record-sets transaction execute \
+	    --zone "${PROJECT}-measurementlab-net" \
+	    "${GCP_ARGS[@]}"
+     fi
   fi
+
 
   # Create the GCE instance.
   #
@@ -712,6 +720,7 @@ EOF
         -e 's|{{K8S_VERSION}}|${K8S_VERSION}|g' \
         -e 's|{{K8S_CLUSTER_CIDR}}|${K8S_CLUSTER_CIDR}|g' \
         -e 's|{{K8S_SERVICE_CIDR}}|${K8S_SERVICE_CIDR}|g' \
+        -e 's|{{EXTERNAL_LB_IP}}|${EXTERNAL_LB_IP}|g' \
         ./kubeadm-config.yml.template > \
         ./kubeadm-config.yml
 EOF
@@ -767,7 +776,7 @@ EOF
   # easily access kubectl as well as etcdctl.  As we productionize this process,
   # this code should be deleted.  For the next steps, we no longer want to be
   # root.
-  gcloud compute ssh "${gce_name}" "${GCE_ARGS[@]}" <<EOF
+  gcloud compute ssh "${gce_name}" "${GCE_ARGS[@]}" <<\EOF
     set -x
     mkdir -p $HOME/.kube
     sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
@@ -796,7 +805,9 @@ EOF
                    openssl rsa -pubin -outform der 2>/dev/null | \
                    openssl dgst -sha256 -hex | sed 's/^.* //'")
     sed -e "s/{{CA_CERT_HASH}}/${ca_cert_hash}/" ../node/setup_k8s.sh.template > setup_k8s.sh
-    gsutil cp setup_k8s.sh gs://epoxy-${PROJECT}/stage3_coreos/setup_k8s.sh
+    if false ; then
+	gsutil cp setup_k8s.sh gs://epoxy-${PROJECT}/stage3_coreos/setup_k8s.sh
+    fi
   fi
 
   # Evaluate the common.yml.template network config template file.

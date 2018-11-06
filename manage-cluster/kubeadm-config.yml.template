@@ -17,7 +17,7 @@ apiVersion: kubeadm.k8s.io/v1alpha3
 kind: ClusterConfiguration
 kubernetesVersion: v{{K8S_VERSION}}
 apiServerCertSANs:
-- {{LOAD_BALANCER_NAME}}.{{PROJECT}}.measurementlab.net
+- {{EXTERNAL_LB_IP}}
 apiServerExtraArgs:
   cloud-provider: "gce"
   cloud-config: "/etc/kubernetes/cloud-provider.conf"
@@ -31,7 +31,7 @@ auditPolicy:
   path: ""
 certificatesDir: /etc/kubernetes/pki
 clusterName: kubernetes
-controlPlaneEndpoint: {{LOAD_BALANCER_NAME}}.{{PROJECT}}.measurementlab.net:6443
+controlPlaneEndpoint: {{EXTERNAL_LB_IP}}:6443
 controllerManagerExtraArgs:
   node-cidr-mask-size: "26"
   cloud-provider: "gce"
